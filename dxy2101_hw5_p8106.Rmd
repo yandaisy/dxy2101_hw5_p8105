@@ -55,4 +55,27 @@ homicide_data =
   read_csv(url)
 ```
 
+The homicide data set contains `r nrow(homicide_data)` observations and `r ncol(homicide_data)` variables. The variables included are the following: unique id, reported date, victim characteristics (last name, first name, race, age, sex), location of case (city, state, latitude, longitude), and disposition of case.
+
+Create `city_state` variable. Summarize within cities to obtain number of solved homicides and unsolved homicides.
+
+```{r city, message=FALSE}
+homicide_data =
+  homicide_data %>%
+  mutate(city_state = str_c(city, state, sep = ", "),
+         status = case_when(
+           disposition == "Closed without arrest" ~ "unsolved",
+           disposition == "Open/No arrest" ~ "unsolved",
+           disposition == "Closed by arrest" ~ "solved"
+         )) %>%
+  select(-city, -state, -disposition) %>%
+  relocate(city_state, .before = lat)
+
+# Summarize
+status_summary =
+  homicide_data %>%
+  group_by(city_state, status) %>%
+  summarise(count = n())
+```
+
 
