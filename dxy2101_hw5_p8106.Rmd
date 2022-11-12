@@ -60,6 +60,7 @@ The homicide data set contains `r nrow(homicide_data)` observations and `r ncol(
 Create `city_state` variable. Summarize within cities to obtain number of solved homicides and unsolved homicides.
 
 ```{r city, message=FALSE}
+# Create new variables and clean
 homicide_data =
   homicide_data %>%
   mutate(city_state = str_c(city, state, sep = ", "),
@@ -78,4 +79,58 @@ status_summary =
   summarise(count = n())
 ```
 
+Estimate proportion of unsolved homicides in Baltimore, MD.
+
+```{r baltimore}
+# Filter to Baltimore
+baltimore_data =
+  homicide_data %>%
+  filter(city_state == "Baltimore, MD") %>%
+  summarise(
+    unsolved = sum(status == "unsolved"),
+    total = n()
+  )
+
+# prop.test
+baltimore_prop =
+  prop.test(
+    x = baltimore_data$unsolved,
+    n = baltimore_data$total
+  )
+
+baltimore_estimate =
+  baltimore_prop %>%
+  broom::tidy()
+```
+
+Estimate proportion of unsolved homicides all cities.
+
+```{r all cities, message=FALSE}
+# Create function to run prop.test
+prop_function = function(cities){
+  
+  cities_data  =
+    cities %>%
+    summarise(
+      unsolved = sum(status == "unsolved"),
+      total = n()
+    )
+  
+  cities_prop =
+    prop.test(
+      x = cities_data %>% pull(unsolved),
+      n = cities_data %>% pull(total)
+    )
+  
+  cities_prop
+}
+
+# Test prop_function
+prop_function(
+  homicide_data%>%
+  filter(city_state == "Baltimore, MD"))
+
+# Iterate across all cities
+
+```
 
