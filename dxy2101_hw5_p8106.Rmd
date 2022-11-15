@@ -103,9 +103,9 @@ baltimore_estimate =
   broom::tidy()
 ```
 
-Estimate proportion of unsolved homicides all cities.
+Estimate proportion of unsolved homicides in all cities.
 
-```{r all cities, message=FALSE}
+```{r all cities, message=FALSE, warning=FALSE}
 # Create function to run prop.test
 prop_function = function(cities){
   
@@ -131,6 +131,17 @@ prop_function(
   filter(city_state == "Baltimore, MD"))
 
 # Iterate across all cities
+results = 
+  homicide_data %>% 
+    nest(-city_state) %>% 
+    mutate(
+      test = map(data, prop_function),
+      tidy = map(test, broom::tidy)
+    ) %>% 
+    select(city_state, tidy) %>% 
+    unnest(tidy) %>% 
+    select(city_state, estimate, starts_with('conf'))
 
+results
 ```
 
